@@ -10,7 +10,6 @@ npm-debug.*
 web-build/
 
 /yarn.lock
-/package.json
 /.vscode
 /node_modules
 

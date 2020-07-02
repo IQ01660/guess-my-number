@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
-import { View, Text, StyleSheet, Button, Alert } from 'react-native';
+import { View, Text, StyleSheet, Button, Alert, ScrollView, FlatList } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 //component imports
 import NumberContainer from './../components/NumberContainer';
@@ -27,7 +28,15 @@ class GameScreen extends Component {
 	constructor(props) {
 		super(props);
 		this.state = {
-			randomGuess: generateRandomBetween(1, 100, this.props.userChoice),
+			randomGuess: (() => {
+				const initGuess = generateRandomBetween(1, 100, this.props.userChoice);
+				// if this page updates only, then empty
+				// the rounds array in [App.js]
+				this.props.restartRounds();
+				// adding the first random guess to rounds
+				this.props.roundsUpdate(initGuess);
+				return initGuess;
+			})(),
 			guessRange: {
 				min: 1, //inclusive
 				max: 100, //exclusive
@@ -66,6 +75,8 @@ class GameScreen extends Component {
 				prevState.randomGuess
 			);
 
+			this.props.roundsUpdate(updatedGuess);
+
 			return {
 				randomGuess: updatedGuess,
 				guessRange: {
@@ -84,6 +95,8 @@ class GameScreen extends Component {
 				prevState.randomGuess
 			);
 
+			this.props.roundsUpdate(updatedGuess);
+
 			return {
 				randomGuess: updatedGuess,
 				guessRange: {
@@ -94,18 +107,14 @@ class GameScreen extends Component {
 		});
 	}
 
-    componentDidUpdate() {
-        //if you found the user's number switch to game over page
-        if (this.state.randomGuess === this.props.userChoice)
-        {
-            this.props.responseHandler(this.state.randomGuess);
-            return null;
-        }
-    }
+	componentDidUpdate() {
+		//if you found the user's number switch to game over page
+		if (this.state.randomGuess === this.props.userChoice) {
+			this.props.responseHandler(this.state.randomGuess);
+		}
+	}
 
 	render() {
-        
-
 		return (
 			<View style={styles.screen}>
 				<Text>Computer's Guess</Text>
@@ -114,6 +123,18 @@ class GameScreen extends Component {
 					<Button title="Lower" onPress={this.hintHandler.bind(this, 'lower')} />
 					<Button title="Greater" onPress={this.hintHandler.bind(this, 'greater')} />
 				</Card>
+				<View style={styles.list}>
+					<FlatList
+						contentContainerStyle={styles.listContainer}
+						data={this.props.rounds}
+						renderItem={(guessWrapper) => (
+							<View key={guessWrapper.item.id} style={styles.listItem}>
+								<Text>#{this.props.rounds.length - guessWrapper.index} </Text>
+								<Text>{guessWrapper.item.guess}</Text>
+							</View>
+						)}
+					/>
+				</View>
 			</View>
 		);
 	}
@@ -134,6 +155,26 @@ const styles = StyleSheet.create({
 		marginTop: 20,
 		width: 300,
 		maxWidth: '80%',
+	},
+	list: {
+		flex: 1,
+		width: '60%',
+	},
+	listContainer: {
+		justifyContent: 'center',
+		flexGrow: 1,
+		paddingVertical: 50,
+	},
+	listItem: {
+		flexDirection: 'row',
+		justifyContent: 'space-between',
+		alignItems: 'center',
+		borderColor: '#ccc',
+		borderWidth: 1,
+		padding: 15,
+		marginVertical: 10,
+		backgroundColor: 'white',
+		width: '100%',
 	},
 });
 

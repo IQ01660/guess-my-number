@@ -9,7 +9,6 @@ npm-debug.*
 *.orig.*
 web-build/
 
-/yarn.lock
 /.vscode
 /node_modules
 
